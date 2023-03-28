@@ -1,7 +1,23 @@
 const router = require('express').Router();
+const authModel = require("./auth-model")
 
 router.post('/register', (req, res) => {
-  res.end('implement register, please!');
+  if(req.body.username && req.body.password){
+  authModel.getUserBy({username:req.body.username}).then(promise => {
+    if(promise){
+      res.status(400).json({message:"username taken"})
+    }else{
+      authModel.createUser(req.body).then(promise => {
+        res.status(200).json(promise);
+      })      
+    }
+  })
+}else{
+  res.status(400).json({message:"username and password required"})
+}
+
+
+  
   /*
     IMPLEMENT
     You are welcome to build additional middlewares to help with the endpoint's functionality.
