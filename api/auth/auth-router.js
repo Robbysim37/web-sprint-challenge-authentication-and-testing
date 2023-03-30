@@ -1,6 +1,19 @@
 const router = require('express').Router();
 const authModel = require("./auth-model")
 
+const jwt = require("jsonwebtoken")
+
+const generateToken = (user) => {
+  const payload = {
+    subject: user.id,
+    username: user.username,
+  }
+  const secret = "ThisIsASecret"
+  const options = {
+    expiresIn : "1d"
+  }
+}
+
 router.post('/register', (req, res) => {
   if(req.body.username && req.body.password){
   authModel.getUserBy({username:req.body.username}).then(promise => {
@@ -11,11 +24,13 @@ router.post('/register', (req, res) => {
         res.status(200).json(promise);
       })      
     }
+  }).catch( err => {
+    res.status(500).json({message:err.message})
   })
 }else{
+  console.log("server console log")
   res.status(400).json({message:"username and password required"})
 }
-
 
   
   /*

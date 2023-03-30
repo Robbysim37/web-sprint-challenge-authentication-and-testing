@@ -5,7 +5,7 @@ const getUserBy = async (filter) => {
 }
 
 const getUserById = async (userId) => {
-    return db("users").where("id",userId)
+    return db("users").where("id",userId).first()
 }
 
 const createUser = async (user) => {
