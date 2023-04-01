@@ -37,7 +37,7 @@ describe("[POST] user login", () => {
     .send({username:"BobbyTest",password:"ThisIsAPassword"}) 
     const response = await request(server).post(`/api/auth/login`)
     .send({username:"BobbyTest",password:"ThisIsAPassword"}) 
-    expect(response.statusCode).toBeDefined()
+    expect(response.statusCode).toBe(200)
   })
   it("returns session token on login", async () => {
     await request(server).post(`/api/auth/register`)
@@ -45,5 +45,20 @@ describe("[POST] user login", () => {
     const response = await request(server).post(`/api/auth/login`)
     .send({username:"BobbyTest",password:"ThisIsAPassword"}) 
     expect(response.body.token).toBeDefined()
+  })
+})
+
+describe("[GET] jokes array", () => {
+  it("returns correct message with no token", async () => {
+    const response = await request(server).get("/api/jokes")
+    expect(response.body.message).toEqual("Token required")
+  })
+  it("returns an array of jokes with correct token", async () => {
+    await request(server).post(`/api/auth/register`)
+    .send({username:"BobbyTest",password:"ThisIsAPassword"})
+    const res = await request(server).post(`/api/auth/login`)
+    .send({username:"BobbyTest",password:"ThisIsAPassword"})
+    const response = await request(server).get("/api/jokes").set('Authorization', res.body.token)
+    expect(response.body.length).toEqual(3)
   })
 })
