@@ -1,7 +1,44 @@
 const router = require('express').Router();
+const authModel = require("./auth-model")
+const bcrypt = require("bcrypt")
+const jwt = require("jsonwebtoken")
+const {JWT_SECRET} = require("../../secret")
+
+const generateToken = (user) => {
+  const payload = {
+    subject: user.id,
+    username: user.username,
+  }
+  const secret = JWT_SECRET
+  const options = {
+    expiresIn : "1d"
+  }
+  return jwt.sign(payload,secret,options)
+}
 
 router.post('/register', (req, res) => {
-  res.end('implement register, please!');
+
+  const hash = bcrypt.hashSync(req.body.password,8)
+  const user = {username:req.body.username,password:hash}
+
+  if(req.body.username && req.body.password){
+  authModel.getUserBy({username:req.body.username}).then(promise => {
+    if(promise){
+      res.status(400).json({message:"username taken"})
+    }else{
+      authModel.createUser(user).then(promise => {
+        res.status(200).json(promise);
+      })      
+    }
+  }).catch( err => {
+    res.status(500).json({message:err.message})
+  })
+}else{
+  console.log("server console log")
+  res.status(400).json({message:"username and password required"})
+}
+
+  
   /*
     IMPLEMENT
     You are welcome to build additional middlewares to help with the endpoint's functionality.
@@ -30,7 +67,18 @@ router.post('/register', (req, res) => {
 });
 
 router.post('/login', (req, res) => {
-  res.end('implement login, please!');
+  if(req.body.username && req.body.password){
+    authModel.getUserBy({username:req.body.username}).then(user => {
+      if(user && bcrypt.compareSync(req.body.password,user.password)){
+        const token = generateToken(user)
+        res.status(200).json({message:`welcome, ${user.username}`,token})
+      }else{
+        res.status(400).json({message:"invalid credentials"})
+      }
+    })
+  }else{
+    res.status(400).json({message:"username and password required"})
+  }
   /*
     IMPLEMENT
     You are welcome to build additional middlewares to help with the endpoint's functionality.
