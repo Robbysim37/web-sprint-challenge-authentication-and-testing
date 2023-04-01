@@ -17,11 +17,9 @@ const generateToken = (user) => {
 }
 
 router.post('/register', (req, res) => {
-
-  const hash = bcrypt.hashSync(req.body.password,8)
-  const user = {username:req.body.username,password:hash}
-
   if(req.body.username && req.body.password){
+    const hash = bcrypt.hashSync(req.body.password,8)
+    const user = {username:req.body.username,password:hash}
   authModel.getUserBy({username:req.body.username}).then(promise => {
     if(promise){
       res.status(400).json({message:"username taken"})
